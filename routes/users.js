@@ -9,7 +9,15 @@ router.post('/', (req, res, next) => {
   let { username, password, fullname } = req.body;
 
   const newUser = { username, fullname, password };
-  User.create(newUser)
+  User.hashPassword(password)
+    .then(digest => {
+      const newUser = {
+        username,
+        password: digest,
+        fullname
+      };
+      return User.create(newUser);
+    })
     .then(result => {
       res.location(`/api/users/${result.id}`)
         .status(201)
