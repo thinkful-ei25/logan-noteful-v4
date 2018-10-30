@@ -2,10 +2,12 @@
 
 const express = require('express');
 const mongoose = require('mongoose');
-
+const passport = require('passport');
 const Note = require('../models/note');
 
 const router = express.Router();
+// Protect endpoints using JWT Strategy
+router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
@@ -145,7 +147,7 @@ router.put('/:id', (req, res, next) => {
 
   if (toUpdate.folderId === '') {
     delete toUpdate.folderId;
-    toUpdate.$unset = {folderId : 1};
+    toUpdate.$unset = { folderId: 1 };
   }
 
   Note.findByIdAndUpdate(id, toUpdate, { new: true })

@@ -19,7 +19,7 @@ const sandbox = sinon.createSandbox();
 describe('Noteful API - Folders', function () {
 
   before(function () {
-    return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser: true, useCreateIndex : true })
+    return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser: true, useCreateIndex: true })
       .then(() => Promise.all([
         Note.deleteMany(),
         Folder.deleteMany()
@@ -36,7 +36,7 @@ describe('Noteful API - Folders', function () {
   afterEach(function () {
     sandbox.restore();
     return Promise.all([
-      Note.deleteMany(), 
+      Note.deleteMany(),
       Folder.deleteMany()
     ]);
   });
@@ -44,7 +44,7 @@ describe('Noteful API - Folders', function () {
   after(function () {
     return mongoose.disconnect();
   });
-  
+
   describe('GET /api/folders', function () {
 
     it('should return a list sorted with the correct number of folders', function () {
