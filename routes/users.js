@@ -7,6 +7,7 @@ const router = express.Router();
 //post to /api/users
 router.post('/', (req, res, next) => {
   let { username, password, fullname } = req.body;
+  fullname = fullname.trim();
   // VALIDATE FIELDS, 422 = unprocessable entity
   //The username and password fields are required
   const requiredFields = ['username', 'password'];
