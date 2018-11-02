@@ -12,7 +12,11 @@ function validateFolderId(folderId, userId) {
   // verify folderId is a valid ObjectId
   // if validation fails return error message 
   //'The folderId is not valid' with status 400
-  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+  if (folderId === undefined) {
+    return Promise.resolve();
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(folderId)) {
     const err = new Error('The folderId is not valid');
     err.status = 400;
     return Promise.reject(err);
@@ -32,12 +36,22 @@ function validateFolderId(folderId, userId) {
 function validateTagId(tags, userId) {
   //verify tags property is an array, if fails, return
   // 'The tags property must be an array' with status 400
+  if (tags === undefined) {
+    return Promise.resolve();
+  }
   if (!Array.isArray(tags)) {
     const err = new Error('The tags property must be an array');
     err.status = 400;
     return Promise.reject(err);
   }
-  console.log(tags);
+  //find bad tag ids
+  const badTagIds = tags.filter((tag) => !mongoose.Types.ObjectId.isValid(tag));
+  if (badTagIds.length > 0) {
+    const err = new Error('The `tags` array contains an invalid `id`');
+    err.status = 400;
+    return Promise.reject(err);
+  }
+  //console.log(tags);
   //verify all tags belong to current user, if fails
   //return an error message 'The tags array contains an invalid id' with status 400.
   return Tag.find({ _id: tags, userId })
@@ -131,12 +145,14 @@ router.post('/', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
-
   const newNote = { title, content, folderId, tags, userId };
+  if (newNote.folderId === '') {
+    delete newNote.folderId;
+  }
 
   Promise.all([
-    validateFolderId(folderId, userId),
-    validateTagId(tags, userId)
+    validateFolderId(newNote.folderId, userId),
+    validateTagId(newNote.tags, userId)
   ])
     .then(() =>
       Note.create(newNote))
@@ -151,8 +167,9 @@ router.post('/', (req, res, next) => {
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
+  const userId = req.user.id;
   const toUpdate = {};
-  const updateableFields = ['title', 'content', 'userId', 'folderId', 'tags'];
+  const updateableFields = ['title', 'content', 'folderId', 'tags'];
 
   updateableFields.forEach(field => {
     if (field in req.body) {
@@ -193,8 +210,8 @@ router.put('/:id', (req, res, next) => {
     toUpdate.$unset = { folderId: 1 };
   }
   Promise.all([
-    validateFolderId(toUpdate.folderId, toUpdate.userId),
-    validateTagId(toUpdate.tags, toUpdate.userId)
+    validateFolderId(toUpdate.folderId, userId),
+    validateTagId(toUpdate.tags, userId)
   ])
     .then(() =>
       Note.findByIdAndUpdate(id, toUpdate, { new: true })

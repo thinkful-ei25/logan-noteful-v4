@@ -18,7 +18,7 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const sandbox = sinon.createSandbox();
 
-describe.only('Noteful API - Folders', function () {
+describe('Noteful API - Folders', function () {
   let token;
   let user;
   before(function () {
@@ -310,7 +310,7 @@ describe.only('Noteful API - Folders', function () {
     it('should return an error when missing "name" field', function () {
       const updateItem = {};
       let data;
-      return Folder.findOne()
+      return Folder.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app).put(`/api/folders/${data.id}`)
@@ -327,7 +327,7 @@ describe.only('Noteful API - Folders', function () {
     it('should return an error when "name" field is empty string', function () {
       const updateItem = { name: '' };
       let data;
-      return Folder.findOne()
+      return Folder.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
@@ -366,7 +366,7 @@ describe.only('Noteful API - Folders', function () {
 
       const updateItem = { name: 'Updated Name' };
       let data;
-      return Folder.findOne()
+      return Folder.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app).put(`/api/folders/${data.id}`)
